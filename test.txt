@@ -1,1 +1,1 @@
-testinifiletext
+HELLO ALICE
