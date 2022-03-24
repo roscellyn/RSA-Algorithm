@@ -55,16 +55,6 @@
      <string>Jenis Kunci</string>
     </property>
    </widget>
-   <widget class="QTextEdit" name="input_key">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>204</y>
-      <width>441</width>
-      <height>31</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QLabel" name="metode">
     <property name="geometry">
      <rect>
@@ -120,16 +110,6 @@
     </property>
     <property name="text">
      <string>Plainteks</string>
-    </property>
-   </widget>
-   <widget class="QTextEdit" name="input">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>324</y>
-      <width>441</width>
-      <height>71</height>
-     </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="browse_button">
@@ -504,6 +484,26 @@
      </rect>
     </property>
    </widget>
+   <widget class="QLineEdit" name="input_key">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>200</y>
+      <width>441</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="input">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>324</y>
+      <width>441</width>
+      <height>71</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -511,7 +511,7 @@
      <x>0</x>
      <y>0</y>
      <width>480</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
   </widget>

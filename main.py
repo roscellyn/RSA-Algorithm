@@ -6,7 +6,7 @@ import time
 
 from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QRegExpValidator, QIntValidator
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QStackedWidget, QFileDialog
 
 class MainScreen(QtWidgets.QMainWindow):
@@ -21,38 +21,45 @@ class MainScreen(QtWidgets.QMainWindow):
         self.key_extension = "pub"
         self.c_hex = None
         self.arr_pb = None
-        self.keytext = None
+        self.keytext = ""
         self.input_p.setValidator(QIntValidator())
         self.input_q.setValidator(QIntValidator())
+        self.input_key.setValidator(QIntValidator())
+        self.input_key.setDisabled(True)
         self.jenis_file.setChecked(True)
         self.metode_encrypt.setChecked(True)
+        self.input_p.setPlaceholderText("Masukkan p")
+        self.input_q.setPlaceholderText("Masukkan q")
         self.input_key.setPlaceholderText("Masukkan kunci")
         self.input.setPlaceholderText("Pilih file pesan")
+        self.output.setPlaceholderText("Hasil akan ditampilkan di sini")
         self.save_filename.setPlaceholderText("Masukkan nama file")
         self.button.clicked.connect(self.generate)
         self.jenis_file.clicked.connect(self.change_jenis_key)
         self.jenis_ketik.clicked.connect(self.change_jenis_key)
         self.metode_encrypt.clicked.connect(self.change_method)
         self.metode_decrypt.clicked.connect(self.change_method)
+        self.key_button.clicked.connect(self.save_keyfile)
         self.save_button.clicked.connect(self.save_file)
+        self.browse_key.clicked.connect(self.browse_keyfile)
         self.browse_button.clicked.connect(self.browse_file)
 
-        # self.input_p = "11"
-        # self.input_q = "11"
-        # self.input_p.textChanged.connect(self.is_prime(self.input_p))
-        # self.input_q.textChanged.connect(self.is_prime(self.input_q))
-
-        # input_validator = self.is_prime(self.input_q)
-        # self.input_q.setValidator(input_validator)
+        self.input_p.textChanged.connect(self.is_p_prime)
+        self.input_q.textChanged.connect(self.is_q_prime)
+        self.input_key.textChanged.connect(self.validate_key)
 
     def change_jenis_key(self):
+        self.input_key.setText("")
+        self.keytext = ""
         if(self.jenis_ketik.isChecked()):
             self.is_keyfile = False
-            self.save_name = ""
-            self.filename = ""
-            self.extension = "txt"
+            self.browse_key.setEnabled(False)
+            self.input_key.setDisabled(False)
+            self.keytext_filename = ""
         else:
             self.is_keyfile = True
+            self.browse_key.setEnabled(True)
+            self.input_key.setDisabled(True)
         self.alert.setText("")
         self.alert.setStyleSheet("color: black;")
     
@@ -82,64 +89,79 @@ class MainScreen(QtWidgets.QMainWindow):
             self.is_keyfile = True
         else:
             self.is_keyfile = False
-            self.input_text = self.input_key.toPlainText()
+            self.keytext = self.input_key.text()
         
         if self.metode_encrypt.isChecked():
             self.is_encrypt = True
-            if(self.is_keyfile and (self.keytext_filename == "")):
+            if(self.is_keyfile and (self.keytext == "")):
                 self.key_filename.setText("Upload file dulu!")
             else:
-                if(self.filename == ""):
-                    self.browse_filename.setText("Upload file dulu!")
+                if(self.keytext == ""):
+                    self.key_filename.setText("Masukkan key dulu!")
                 else:
+                    print(self.filename)
+                    start_time = time.time()
                     self.encrypt()
+                    end_time = time.time()
+                    duration = "Enkripsi selesai dalam " + str(round(end_time - start_time, 2)) + " detik"
+                    self.alert.setText(duration)
+                    self.alert.setStyleSheet("color: black;")
         else:
             self.is_encrypt = False
-            if(self.is_keyfile and (self.keytext_filename == "")):
+            if(self.is_keyfile and (self.keytext == "")):
                 self.key_filename.setText("Upload file dulu!")
             else:
                 if(self.filename == ""):
                     self.browse_filename.setText("Upload file dulu!")
                 else:
+                    start_time = time.time()
                     self.decrypt()
+                    end_time = time.time()
+                    duration = "Dekripsi selesai dalam " + str(round(end_time - start_time, 2)) + " detik"
+                    self.alert.setText(duration)
+                    self.alert.setStyleSheet("color: black;")
     
     def browse_keyfile(self):
         file = QFileDialog.getOpenFileName(self)
-        self.keytext_filename = file[0]
-        self.key_filename.setText(self.keytext_filename)
-        self.key_extension = os.path.splitext(file[0])[1][1:]
-        self.alert.setText("")
-        self.alert.setStyleSheet("color: black;")
+        if(file[0] != ''):
+            self.keytext_filename = file[0]
+            self.key_filename.setText(self.keytext_filename)
+            self.key_extension = os.path.splitext(file[0])[1][1:]
+            self.alert.setText("")
+            self.alert.setStyleSheet("color: black;")
 
-        f = open(self.keytext_filename,"rb")
-        key_text = f.read()
-        f.close()
-        self.input_key.setText(key_text)
+            f = open(self.keytext_filename,"rb")
+            text = f.read()
+            self.keytext = ""
+            for byte in text:
+                self.keytext += chr(byte)
+            f.close()
+            self.input_key.setText(self.keytext)
     
     def browse_file(self):
         file = QFileDialog.getOpenFileName(self)
-        self.filename = file[0]
-        self.browse_filename.setText(self.filename)
-        self.extension = os.path.splitext(file[0])[1][1:]
-        self.alert.setText("")
-        self.alert.setStyleSheet("color: black;")
-        
-        arr = []
-        if(self.is_encrypt):
-            f = open(self.filename,"rb")
-            file_bytes = f.read()
-            f.close()
-
-            for byte in file_bytes:
-                arr.append(chr(byte))
-            self.input.setText(''.join(arr))
-        else:
-            f = open(self.filename, "r")
-            c_hex = f.read()
-            arr_cb = c_hex.split(" ")
-            f.close()
-            self.input.setText(' '.join(arr_cb))
+        if(file[0] != ''):
+            self.filename = file[0]
+            self.browse_filename.setText(self.filename)
+            self.extension = os.path.splitext(file[0])[1][1:]
+            self.alert.setText("")
+            self.alert.setStyleSheet("color: black;")
             
+            arr = []
+            if(self.is_encrypt):
+                f = open(self.filename,"rb")
+                file_bytes = f.read()
+                f.close()
+                
+                for byte in file_bytes:
+                    arr.append(chr(byte))
+                self.input.setText(''.join(arr))
+            else:
+                f = open(self.filename, "r")
+                c_hex = f.read()
+                arr_cb = c_hex.split(" ")
+                f.close()
+                self.input.setText(' '.join(arr_cb))
 
     def save_file(self):
         self.save_name = self.save_filename.text()
@@ -148,7 +170,7 @@ class MainScreen(QtWidgets.QMainWindow):
                 self.alert.setText("Enkripsi dulu!")
                 self.alert.setStyleSheet("color: red;")
             else:
-                w=open(self.save_name + "." + self.extension, "wb")
+                w=open(self.save_name + "." + self.extension, "w")
                 w.write(self.c_hex)
                 w.close()
                 self.alert.setText("File berhasil disimpan!")
@@ -166,68 +188,132 @@ class MainScreen(QtWidgets.QMainWindow):
     def generate_private_key(self):
         k = 1
         d = 0.1
-        totient = (self.input_p-1) * (self.input_q-1)
         while(d%1 != 0):
-            d = (1 + k * totient)/self.input_key
+            d = (1 + k * self.totient)/int(self.keytext.toPlainText())
             k += 1
         d = int(d)
         self.private_key = d
 
     def save_keyfile(self):
-        if(self.keytext is None):
-                self.alert.setText("Upload file key dulu!")
-                self.alert.setStyleSheet("color: red;")
+        self.keytext = self.input_key
+        if(self.keytext.toPlainText() == ""):
+            self.alert.setText("Masukkan key dulu!")
+            self.alert.setStyleSheet("color: red;")
         else:
-            if(self.is_encrypt):
-                w=open("publickey" + "." + "pub", "w")
-                w.write(self.public_key)
-                w.close()
-                
-            w=open("privatekey" + "." + "pri", "w")
-            w.write(self.private_key)
-            w.close()
+            if(self.input_p.text() == "" or self.input_q.text() == ""):
+                self.alert.setText("Masukkan nilai p dan q!")
+                self.alert.setStyleSheet("color: red;")
+            else:
+                if(self.is_encrypt):
+                    self.generate_private_key()
+                    w=open("publickey" + "." + "pub", "w")
+                    w.write(self.keytext.toPlainText())
+                    w.close()
+                    
+                    w=open("privatekey" + "." + "pri", "w")
+                    w.write(str(self.private_key))
+                    w.close()
+                    
+                else:
+                    w=open("privatekey" + "." + "pri", "w")
+                    w.write(self.keytext.toPlainText())
+                    w.close()
 
-            self.alert.setText("File key berhasil disimpan!")
-            self.alert.setStyleSheet("color: black;")
+                self.alert.setText("File key berhasil disimpan!")
+                self.alert.setStyleSheet("color: black;")
 
     def encrypt(self):
         f = open(self.filename,"rb")
         file_bytes = f.read()
         f.close()
 
-        n = self.input_p * self.input_q
         self.c_hex = ""
         i = 0
         for byte in file_bytes:
-            self.c_hex += self.DecToHex(byte**self.public_key % n)
+            self.c_hex += self.DecToHex(byte**int(self.keytext) % self.n)
             if i < len(file_bytes)-1:
                 self.c_hex += " "
             i += 1
         
-    def is_prime(self, type):
-        if(type=="p"):
-            a = self.input_p.text()
-        else:
-            a = self.input_q.text()
-        a_prime = True
-        # if (not a.isinstance()):
-        #     a_prime = False
-        a = int(a)
-        if(a > 1):
-            i = 2
-            while(a_prime and i <= a//2):
-                if(a % i == 0):
-                    a_prime = False
-                i += 1
-        else:
-            a_prime = False
+        self.output.setText(self.c_hex)
+    
+    def decrypt(self):
+        f = open(self.filename, "r")
+        c_hex = f.read()
+        arr_cb = c_hex.split(" ")
+        f.close()
 
-        if(not a_prime):
-            if (type=="p"):
-                self.alert.setText("Nilai p tidak prima")
+        arr_p = []
+        for cb in arr_cb:
+            temp = self.HexToDec(cb)**int(self.keytext) % self.n
+            arr_p.append(temp)
+    
+        self.arr_pb = bytearray(arr_p)
+        
+        arr = []
+        for byte in self.arr_pb:
+            arr.append(chr(byte))
+        self.output.setText(''.join(arr))
+    
+    def is_p_prime(self):
+        a = self.input_p.text()
+        a_prime = True
+        
+        if(a != ""):
+            a = int(a)
+            if(a > 1):
+                i = 2
+                while(a_prime and i <= a//2):
+                    if(a % i == 0):
+                        a_prime = False
+                    i += 1
             else:
+                a_prime = False
+
+            if(not a_prime):
+                self.alert.setText("Nilai p tidak prima")
+                self.alert.setStyleSheet("color: red;")
+            else:
+                self.alert.setText("")
+                self.alert.setStyleSheet("color: black;")
+    
+    def is_q_prime(self):
+        a = self.input_q.text()
+        a_prime = True
+        
+        if(a != ""):
+            a = int(a)
+            if(a > 1):
+                i = 2
+                while(a_prime and i <= a//2):
+                    if(a % i == 0):
+                        a_prime = False
+                    i += 1
+            else:
+                a_prime = False
+
+            if(not a_prime):
                 self.alert.setText("Nilai q tidak prima")
-            self.alert.setStyleSheet("color: red;")
+                self.alert.setStyleSheet("color: red;")
+            else:
+                self.alert.setText("")
+                self.alert.setStyleSheet("color: black;")
+
+    def validate_key(self):
+        self.keytext = self.input_key.text()
+        if(self.keytext != ""):
+            if(self.input_p.text() != "" and self.input_q.text() != ""):
+                self.totient = (int(self.input_p.text())-1) * (int(self.input_q.text())-1)
+                self.n = int(self.input_p.text()) * int(self.input_q.text())
+                if (self.fpb(self.totient, int(self.keytext)) != 1):
+                    self.alert.setText("Key tidak relatif prima terhadap totient!")
+                    self.alert.setStyleSheet("color: red;")
+                else:
+                    self.alert.setText("")
+                    self.alert.setStyleSheet("color: black;")
+            else:
+                self.alert.setText("Masukkan p dan q dulu!")
+                self.alert.setStyleSheet("color: red;")
 
     def fpb(self, a, b):
         if(b == 0):

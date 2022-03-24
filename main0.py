@@ -174,7 +174,7 @@ for cb in arr_cb:
 # print(arr_p)
 # print("plainteks(bytes) = ")
 # print(bytearray(arr_p))
-
+print(arr_p)
 f = open("plainteks.jpg", "wb")
 arr_pb = bytearray(arr_p)
 print(len(arr_pb))
