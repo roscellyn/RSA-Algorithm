@@ -175,6 +175,8 @@ class MainScreen(QtWidgets.QMainWindow):
                 w=open(self.save_name + "." + self.extension, "w")
                 w.write(self.c_hex)
                 w.close()
+                size = "Ukuran file " + str(os.stat(self.save_filename.text() + "." + self.extension).st_size/1000) + " KB"
+                self.size.setText(str(size))
                 self.alert.setText("File berhasil disimpan!")
                 self.alert.setStyleSheet("color: black;")
         else:
@@ -184,6 +186,8 @@ class MainScreen(QtWidgets.QMainWindow):
             else:
                 w=open(self.save_name + "." + self.extension, "wb")
                 w.write(self.arr_pb)
+                size = "Ukuran file " + str(os.stat(self.save_filename.text() + "." + self.extension).st_size/1000) + " KB"
+                self.size.setText(str(size))
                 self.alert.setText("File berhasil disimpan!")
                 self.alert.setStyleSheet("color: black;")
 
@@ -236,7 +240,7 @@ class MainScreen(QtWidgets.QMainWindow):
             if i < len(file_bytes)-1:
                 self.c_hex += " "
             i += 1
-        
+
         self.output.setText(self.c_hex)
     
     def decrypt(self):
@@ -255,6 +259,7 @@ class MainScreen(QtWidgets.QMainWindow):
         arr = []
         for byte in self.arr_pb:
             arr.append(chr(byte))
+            
         self.output.setText(''.join(arr))
     
     def is_p_prime(self):
