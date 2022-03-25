@@ -50,6 +50,8 @@ class MainScreen(QtWidgets.QMainWindow):
 
     def change_jenis_key(self):
         self.input_key.setText("")
+        self.keytext_filename = ""
+        self.key_filename.setText("")
         self.keytext = ""
         if(self.jenis_ketik.isChecked()):
             self.is_keyfile = False
