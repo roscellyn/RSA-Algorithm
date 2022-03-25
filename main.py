@@ -101,7 +101,6 @@ class MainScreen(QtWidgets.QMainWindow):
                 if(self.keytext == ""):
                     self.key_filename.setText("Masukkan key dulu!")
                 else:
-                    print(self.filename)
                     start_time = time.time()
                     self.encrypt()
                     end_time = time.time()
@@ -195,15 +194,16 @@ class MainScreen(QtWidgets.QMainWindow):
     def generate_private_key(self):
         k = 1
         d = 0.1
+        self.totient = (int(self.input_p.text())-1) * (int(self.input_q.text())-1)
         while(d%1 != 0):
-            d = (1 + k * self.totient)/int(self.keytext.toPlainText())
+            d = (1 + k * self.totient)/int(self.keytext)
             k += 1
         d = int(d)
         self.private_key = d
 
     def save_keyfile(self):
-        self.keytext = self.input_key
-        if(self.keytext.text() == ""):
+        self.keytext = self.input_key.text()
+        if(self.keytext == ""):
             self.alert.setText("Masukkan key dulu!")
             self.alert.setStyleSheet("color: red;")
         else:
@@ -214,7 +214,7 @@ class MainScreen(QtWidgets.QMainWindow):
                 if(self.is_encrypt):
                     self.generate_private_key()
                     w=open("publickey" + "." + "pub", "w")
-                    w.write(self.keytext.toPlainText())
+                    w.write(self.keytext)
                     w.close()
                     
                     w=open("privatekey" + "." + "pri", "w")
@@ -223,7 +223,7 @@ class MainScreen(QtWidgets.QMainWindow):
                     
                 else:
                     w=open("privatekey" + "." + "pri", "w")
-                    w.write(self.keytext.toPlainText())
+                    w.write(self.keytext)
                     w.close()
 
                 self.alert.setText("File key berhasil disimpan!")
@@ -234,6 +234,7 @@ class MainScreen(QtWidgets.QMainWindow):
         file_bytes = f.read()
         f.close()
 
+        self.n = int(self.input_p.text()) * int(self.input_q.text())
         self.c_hex = ""
         i = 0
         for byte in file_bytes:
@@ -250,6 +251,7 @@ class MainScreen(QtWidgets.QMainWindow):
         arr_cb = c_hex.split(" ")
         f.close()
 
+        self.n = int(self.input_p.text()) * int(self.input_q.text())
         arr_p = []
         for cb in arr_cb:
             temp = self.HexToDec(cb)**int(self.keytext) % self.n
