@@ -186,6 +186,7 @@ class MainScreen(QtWidgets.QMainWindow):
             else:
                 w=open(self.save_name + "." + self.extension, "wb")
                 w.write(self.arr_pb)
+                w.close()
                 size = "Ukuran file " + str(os.stat(self.save_filename.text() + "." + self.extension).st_size/1000) + " KB"
                 self.size.setText(str(size))
                 self.alert.setText("File berhasil disimpan!")
@@ -202,7 +203,7 @@ class MainScreen(QtWidgets.QMainWindow):
 
     def save_keyfile(self):
         self.keytext = self.input_key
-        if(self.keytext.toPlainText() == ""):
+        if(self.keytext.text() == ""):
             self.alert.setText("Masukkan key dulu!")
             self.alert.setStyleSheet("color: red;")
         else:
